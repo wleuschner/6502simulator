@@ -855,6 +855,22 @@ void instr_bit(instruction instr, uint8_t* flags)
     *flags = (*flags & ~(FLAG_NEGATIVE | FLAG_OVERFLOW)) | (result & (FLAG_NEGATIVE | FLAG_OVERFLOW));
 }
 
+void instr_brk()
+{
+    memory[0x0100|registers->reg_s] = (uint8_t)(registers->reg_pc & 0x00FF);
+    memory[0x0100|registers->reg_s-1] = (uint8_t)((registers->reg_pc & 0xFF00)>>8);
+    memory[0x0100|registers->reg_s-2] = registers->reg_flags | FLAG_UNUSED | FLAG_BREAK;
+    registers->reg_s -=3;
+    registers->reg_pc = *((uint16_t*)(memory+0xFFFE));
+}
+
+void instr_rti()
+{
+    registers->reg_flags = memory[0x0100|(registers->reg_s+3)];
+    registers->reg_pc = ((((uint16_t)memory[0x0100|(registers->reg_s+2)])&0x00FF)<<8) | (((uint16_t)memory[0x0100|(registers->reg_s+3)])&0x00FF);
+    registers->reg_s += 3;
+}
+
 instruction step()
 {
     instruction instr = decode_instruction(registers->reg_pc);
