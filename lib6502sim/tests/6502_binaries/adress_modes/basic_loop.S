@@ -1,0 +1,18 @@
+*=0
+
+DEX
+ASL
+start:
+INX
+JMP ($CAFE)
+INC $CAFE,X
+LDX $CAFE,Y
+ADC #$FF
+BEQ lbl2
+SBC $DA
+lbl2:
+ADC ($EA),Y
+SBC ($C0,X)
+SBC $AD,X
+LDX $BF,Y
+JMP start
