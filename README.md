@@ -10,7 +10,11 @@ Usage Simulator and Disassembler:
 6502sim <path to 6502 binary>
 
 Simulator commands:
+
 d - disassembly of current memory
+
 r - show register values and flags
+
 s - single step
+
 q - quit
