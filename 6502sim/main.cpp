@@ -1,7 +1,6 @@
 #include <cstdio>
 #include <climits>
 #include "simulator.h"
-#include "opcode_table.h"
 
 int main(int argc,char** argv)
 {
@@ -29,7 +28,8 @@ int main(int argc,char** argv)
             }
             case 'r':
             {
-                register_to_string(buffer,256);
+                register_file registers = get_registers();
+                register_to_string(buffer, 256, &registers);
                 printf("%s",buffer);
                 break;
             }

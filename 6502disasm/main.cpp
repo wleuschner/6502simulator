@@ -1,7 +1,6 @@
 #include <cstdio>
 #include <climits>
 #include "simulator.h"
-#include "opcode_table.h"
 
 int main(int argc,char** argv)
 {
