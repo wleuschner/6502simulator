@@ -866,7 +866,7 @@ void instr_brk()
 
 void instr_rti()
 {
-    registers->reg_flags = memory[0x0100|(registers->reg_s+3)];
+    registers->reg_flags = memory[0x0100|(registers->reg_s+3)] & ~FLAG_BREAK;
     registers->reg_pc = ((((uint16_t)memory[0x0100|(registers->reg_s+2)])&0x00FF)<<8) | (((uint16_t)memory[0x0100|(registers->reg_s+3)])&0x00FF);
     registers->reg_s += 3;
 }
@@ -891,6 +891,18 @@ instruction step()
         case OPCODE::RTS:
         {
             instr_rts();
+            break;
+        }
+
+        //Interrupt operations
+        case OPCODE::BRK:
+        {
+            instr_brk();
+            break;
+        }
+        case OPCODE::RTI:
+        {
+            instr_rti();
             break;
         }
 
