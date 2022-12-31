@@ -477,15 +477,15 @@ void instr_plp()
 
 void instr_jsr(instruction instr)
 {            ;
-    memory[0x0100|registers->reg_s] = (uint8_t)(registers->reg_pc & 0x00FF);
-    memory[0x0100|registers->reg_s-1] = (uint8_t)((registers->reg_pc & 0xFF00)>>8);
+    memory[0x0100|registers->reg_s] = (uint8_t)((registers->reg_pc & 0xFF00)>>8);
+    memory[0x0100|registers->reg_s-1] = (uint8_t)(registers->reg_pc & 0x00FF);
     registers->reg_s -= 2;
     registers->reg_pc = instr.instr_operand;
 }
 
 void instr_rts()
 {
-    registers->reg_pc = ((((uint16_t)memory[0x0100|(registers->reg_s+1)])&0x00FF)<<8) | (((uint16_t)memory[0x0100|(registers->reg_s+2)])&0x00FF);
+    registers->reg_pc = ((((uint16_t)memory[0x0100|(registers->reg_s+2)])&0x00FF)<<8) | (((uint16_t)memory[0x0100|(registers->reg_s+1)])&0x00FF);
     registers->reg_s += 2;
 }
 
@@ -857,8 +857,8 @@ void instr_bit(instruction instr, uint8_t* flags)
 
 void instr_brk()
 {
-    memory[0x0100|registers->reg_s] = (uint8_t)(registers->reg_pc & 0x00FF);
-    memory[0x0100|registers->reg_s-1] = (uint8_t)((registers->reg_pc & 0xFF00)>>8);
+    memory[0x0100|registers->reg_s] = (uint8_t)((registers->reg_pc & 0xFF00)>>8);
+    memory[0x0100|registers->reg_s-1] = (uint8_t)(registers->reg_pc & 0x00FF);
     memory[0x0100|registers->reg_s-2] = registers->reg_flags | FLAG_UNUSED | FLAG_BREAK;
     registers->reg_s -=3;
     registers->reg_pc = *((uint16_t*)(memory+0xFFFE));
@@ -866,8 +866,8 @@ void instr_brk()
 
 void instr_rti()
 {
-    registers->reg_flags = memory[0x0100|(registers->reg_s+3)] & ~FLAG_BREAK;
-    registers->reg_pc = ((((uint16_t)memory[0x0100|(registers->reg_s+2)])&0x00FF)<<8) | (((uint16_t)memory[0x0100|(registers->reg_s+3)])&0x00FF);
+    registers->reg_flags = memory[0x0100|(registers->reg_s+1)] & ~FLAG_BREAK;
+    registers->reg_pc = ((((uint16_t)memory[0x0100|(registers->reg_s+3)])&0x00FF)<<8) | (((uint16_t)memory[0x0100|(registers->reg_s+2)])&0x00FF);
     registers->reg_s += 3;
 }
 
