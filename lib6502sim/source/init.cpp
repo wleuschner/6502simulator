@@ -472,7 +472,7 @@ void instr_pla(uint8_t* reg, uint8_t* flags)
 void instr_plp()
 {
     registers->reg_s++;
-    registers->reg_flags |= memory[0x0100|registers->reg_s] & ~(FLAG_UNUSED | FLAG_BREAK);
+    registers->reg_flags |= memory[0x0100|registers->reg_s] & ~FLAG_BREAK;
 }
 
 void instr_jsr(instruction instr)
