@@ -9,6 +9,10 @@
 #include <cstring>
 #include <cstdio>
 
+#define STACK_PAGE 0x0100
+#define IRQ_VECTOR 0xFFFE
+
+
 void alu_flags_update(uint8_t* reg, uint8_t* flags)
 {
     //Change Zero Flag
@@ -116,40 +120,40 @@ void instr_ora(instruction instr, uint8_t* memory, register_file* registers)
 
 void instr_pha(uint8_t* memory, register_file* registers)
 {
-    memory[0x0100|registers->reg_s] = registers->reg_a;
+    memory[STACK_PAGE+registers->reg_s] = registers->reg_a;
     registers->reg_s--;
 }
 
 void instr_php(uint8_t* memory, register_file* registers)
 {
-    memory[0x0100|registers->reg_s] = registers->reg_flags | FLAG_UNUSED | FLAG_BREAK;
+    memory[STACK_PAGE+registers->reg_s] = registers->reg_flags | FLAG_UNUSED | FLAG_BREAK;
     registers->reg_s--;
 }
 
 void instr_pla(uint8_t* memory, register_file* registers)
 {
     registers->reg_s++;
-    registers->reg_a = memory[0x0100|registers->reg_s];
+    registers->reg_a = memory[STACK_PAGE+registers->reg_s];
     alu_flags_update(&registers->reg_a, &registers->reg_flags);
 }
 
 void instr_plp(uint8_t* memory, register_file* registers)
 {
     registers->reg_s++;
-    registers->reg_flags |= memory[0x0100|registers->reg_s] & ~FLAG_BREAK;
+    registers->reg_flags |= memory[STACK_PAGE+registers->reg_s] & ~FLAG_BREAK;
 }
 
 void instr_jsr(instruction instr, uint8_t* memory, register_file* registers)
 {            ;
-    memory[0x0100|registers->reg_s] = (uint8_t)((registers->reg_pc & 0xFF00)>>8);
-    memory[0x0100|registers->reg_s-1] = (uint8_t)(registers->reg_pc & 0x00FF);
+    memory[STACK_PAGE+registers->reg_s] = (uint8_t)((registers->reg_pc & 0xFF00)>>8);
+    memory[STACK_PAGE+registers->reg_s-1] = (uint8_t)(registers->reg_pc & 0x00FF);
     registers->reg_s -= 2;
     registers->reg_pc = instr.instr_operand;
 }
 
 void instr_rts(uint8_t* memory, register_file* registers)
 {
-    registers->reg_pc = ((((uint16_t)memory[0x0100|(registers->reg_s+2)])&0x00FF)<<8) | (((uint16_t)memory[0x0100|(registers->reg_s+1)])&0x00FF);
+    registers->reg_pc = ((((uint16_t)memory[STACK_PAGE+(registers->reg_s+2)])&0x00FF)<<8) | (((uint16_t)memory[STACK_PAGE+(registers->reg_s+1)])&0x00FF);
     registers->reg_s += 2;
 }
 
@@ -229,25 +233,7 @@ void instr_cmp(instruction instr, uint8_t* memory, register_file* registers,uint
     {
         registers->reg_flags |= FLAG_CARRY;
     }
-    //Change Zero Flag
-    if(result == 0)
-    {
-        registers->reg_flags |= FLAG_ZERO;
-    }
-    else
-    {
-        registers->reg_flags &= ~FLAG_ZERO;
-    }
-
-    //Change Negative Flag
-    if(result & 128)
-    {
-        registers->reg_flags |= FLAG_NEGATIVE;
-    }
-    else
-    {
-        registers->reg_flags &= ~FLAG_NEGATIVE;
-    }
+    alu_flags_update((uint8_t*)&result, &registers->reg_flags);
 }
 
 void instr_asl(instruction instr, uint8_t* memory, register_file* registers)
@@ -368,16 +354,16 @@ void instr_bit(instruction instr, uint8_t* memory, register_file* registers)
 
 void instr_brk(uint8_t* memory, register_file* registers)
 {
-    memory[0x0100|registers->reg_s] = (uint8_t)((registers->reg_pc & 0xFF00)>>8);
-    memory[0x0100|registers->reg_s-1] = (uint8_t)(registers->reg_pc & 0x00FF);
-    memory[0x0100|registers->reg_s-2] = registers->reg_flags | FLAG_UNUSED | FLAG_BREAK;
+    memory[STACK_PAGE+registers->reg_s] = (uint8_t)((registers->reg_pc & 0xFF00)>>8);
+    memory[STACK_PAGE+registers->reg_s-1] = (uint8_t)(registers->reg_pc & 0x00FF);
+    memory[STACK_PAGE+registers->reg_s-2] = registers->reg_flags | FLAG_UNUSED | FLAG_BREAK;
     registers->reg_s -=3;
-    registers->reg_pc = *((uint16_t*)(memory+0xFFFE));
+    registers->reg_pc = *((uint16_t*)(memory+IRQ_VECTOR));
 }
 
 void instr_rti(uint8_t* memory, register_file* registers)
 {
-    registers->reg_flags = memory[0x0100|(registers->reg_s+1)] & ~FLAG_BREAK;
-    registers->reg_pc = ((((uint16_t)memory[0x0100|(registers->reg_s+3)])&0x00FF)<<8) | (((uint16_t)memory[0x0100|(registers->reg_s+2)])&0x00FF);
+    registers->reg_flags = memory[STACK_PAGE+(registers->reg_s+1)] & ~FLAG_BREAK;
+    registers->reg_pc = ((((uint16_t)memory[STACK_PAGE+(registers->reg_s+3)])&0x00FF)<<8) | (((uint16_t)memory[STACK_PAGE+(registers->reg_s+2)])&0x00FF);
     registers->reg_s += 3;
 }
