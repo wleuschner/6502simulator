@@ -150,7 +150,7 @@ instruction step()
         }
         case OPCODE::BEQ:
         {
-            instr_branch(instr, registers, (registers->reg_flags & FLAG_ZERO));
+            cycle_count += instr_branch(instr, registers, (registers->reg_flags & FLAG_ZERO));
             break;
         }
         case OPCODE::BPL:
