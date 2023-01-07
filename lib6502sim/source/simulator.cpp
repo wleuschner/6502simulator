@@ -83,70 +83,69 @@ std::vector<instruction> disassemble_program()
 instruction step()
 {
     instruction instr = decode_instruction(memory, registers->reg_pc);
-    cycle_count += instr.instr_cycles;
     registers->reg_pc += instr.instr_length;
     switch(instr.opcode_name)
     {
         //Jump and Subroutine operations
         case OPCODE::JMP:
         {
-            registers->reg_pc = decode_effective_adress(instr, memory, registers);
+            cycle_count += instr_jmp(instr, memory, registers);
             break;
         }
         case OPCODE::JSR:
         {
-            instr_jsr(instr, memory, registers);
+            cycle_count += instr_jsr(instr, memory, registers);
             break;
         }
         case OPCODE::RTS:
         {
-            instr_rts(memory, registers);
+            cycle_count += instr_rts(instr, memory, registers);
             break;
         }
 
         //Interrupt operations
         case OPCODE::BRK:
         {
-            instr_brk(memory, registers);
+            cycle_count += instr_brk(instr, memory, registers);
             break;
         }
         case OPCODE::RTI:
         {
-            instr_rti(memory, registers);
+            cycle_count += instr_rti(instr, memory, registers);
             break;
         }
 
         //Compare operations
         case OPCODE::CMP:
         {
-            instr_cmp(instr, memory, registers, &registers->reg_a);
+            cycle_count += instr_cmp(instr, memory, registers, &registers->reg_a);
             break;
         }
         case OPCODE::CPX:
         {
-            instr_cmp(instr, memory, registers, &registers->reg_x);
+            cycle_count += instr_cmp(instr, memory, registers, &registers->reg_x);
             break;
         }
         case OPCODE::CPY:
         {
-            instr_cmp(instr, memory, registers, &registers->reg_y);
+            cycle_count += instr_cmp(instr, memory, registers, &registers->reg_y);
             break;
         }
 
         //Branch operations
         case OPCODE::BCC:
         {
-            instr_branch(instr, registers, !(registers->reg_flags & FLAG_CARRY));
+            cycle_count += instr_branch(instr, registers, !(registers->reg_flags & FLAG_CARRY));
             break;
         }
         case OPCODE::BCS:
         {
-            instr_branch(instr, registers, (registers->reg_flags & FLAG_CARRY));
+            cycle_count += instr_branch(instr, registers, (registers->reg_flags & FLAG_CARRY));
             break;
         }
         case OPCODE::BNE:
         {
-            instr_branch(instr, registers, !(registers->reg_flags & FLAG_ZERO));
+            cycle_count += instr_branch(instr, registers, !(registers->reg_flags & FLAG_ZERO));
             break;
         }
         case OPCODE::BEQ:
@@ -156,240 +155,245 @@ instruction step()
         }
         case OPCODE::BPL:
         {
-            instr_branch(instr, registers, !(registers->reg_flags & FLAG_NEGATIVE));
+            cycle_count += instr_branch(instr, registers, !(registers->reg_flags & FLAG_NEGATIVE));
             break;
         }
         case OPCODE::BMI:
         {
-            instr_branch(instr, registers, (registers->reg_flags & FLAG_NEGATIVE));
+            cycle_count += instr_branch(instr, registers, (registers->reg_flags & FLAG_NEGATIVE));
             break;
         }
         case OPCODE::BVC:
         {
-            instr_branch(instr, registers, !(registers->reg_flags & FLAG_OVERFLOW));
+            cycle_count += instr_branch(instr, registers, !(registers->reg_flags & FLAG_OVERFLOW));
             break;
         }
         case OPCODE::BVS:
         {
-            instr_branch(instr, registers, (registers->reg_flags & FLAG_OVERFLOW));
+            cycle_count += instr_branch(instr, registers, (registers->reg_flags & FLAG_OVERFLOW));
             break;
         }
 
         //Load
         case OPCODE::LDA:
         {
-            instr_load(instr, memory, registers, &registers->reg_a);
+            cycle_count += instr_load(instr, memory, registers, &registers->reg_a);
             break;
         }
         case OPCODE::LDX:
         {
-            instr_load(instr, memory, registers, &registers->reg_x);
+            cycle_count += instr_load(instr, memory, registers, &registers->reg_x);
             break;
         }
         case OPCODE::LDY:
         {
-            instr_load(instr, memory, registers, &registers->reg_y);
+            cycle_count += instr_load(instr, memory, registers, &registers->reg_y);
             break;
         }
 
         //Store
         case OPCODE::STA:
         {
-            instr_store(instr, memory, registers, &registers->reg_a);
+            cycle_count += instr_store(instr, memory, registers, &registers->reg_a);
             break;
         }
         case OPCODE::STX:
         {
-            instr_store(instr, memory, registers, &registers->reg_x);
+            cycle_count += instr_store(instr, memory, registers, &registers->reg_x);
             break;
         }
         case OPCODE::STY:
         {
-            instr_store(instr, memory, registers, &registers->reg_y);
+            cycle_count += instr_store(instr, memory, registers, &registers->reg_y);
             break;
         }
 
         //Transfer
         case OPCODE::TAX:
         {
-            instr_transfer(registers, &registers->reg_a, &registers->reg_x);
+            cycle_count += instr_transfer(instr, registers, &registers->reg_a, &registers->reg_x);
             break;
         }
         case OPCODE::TAY:
         {
-            instr_transfer(registers, &registers->reg_a, &registers->reg_y);
+            cycle_count += instr_transfer(instr, registers, &registers->reg_a, &registers->reg_y);
             break;
         }
         case OPCODE::TSX:
         {
-            instr_transfer(registers, &registers->reg_s, &registers->reg_x);
+            cycle_count += instr_transfer(instr, registers, &registers->reg_s, &registers->reg_x);
             break;
         }
         case OPCODE::TXA:
         {
-            instr_transfer(registers, &registers->reg_x, &registers->reg_a);
+            cycle_count += instr_transfer(instr, registers, &registers->reg_x, &registers->reg_a);
             break;
         }
         case OPCODE::TXS:
         {
-            instr_transfer(registers, &registers->reg_x, &registers->reg_s);
+            cycle_count += instr_transfer(instr, registers, &registers->reg_x, &registers->reg_s);
             break;
         }
         case OPCODE::TYA:
         {
-            instr_transfer(registers, &registers->reg_y, &registers->reg_a);
+            cycle_count += instr_transfer(instr, registers, &registers->reg_y, &registers->reg_a);
             break;
         }
 
         //Set Flags
         case OPCODE::SEC:
         {
-            registers->reg_flags |= FLAG_CARRY;
+            cycle_count += instr_set_flag(instr, registers, FLAG_CARRY);
             break;
         }
         case OPCODE::SED:
         {
-            registers->reg_flags |= FLAG_DECIMAL;
+            cycle_count += instr_set_flag(instr, registers, FLAG_DECIMAL);
             break;
         }
         case OPCODE::SEI:
         {
-            registers->reg_flags |= FLAG_INTERRUPT;
+            cycle_count += instr_set_flag(instr, registers, FLAG_INTERRUPT);
             break;
         }
 
         //Clear Flags
         case OPCODE::CLC:
         {
-            registers->reg_flags &= ~FLAG_CARRY;
+            cycle_count += instr_clear_flag(instr, registers, FLAG_CARRY);
             break;
         }
         case OPCODE::CLD:
         {
-            registers->reg_flags &= ~FLAG_DECIMAL;
+            cycle_count += instr_clear_flag(instr, registers, FLAG_DECIMAL);
             break;
         }
         case OPCODE::CLI:
         {
-            registers->reg_flags &= ~FLAG_INTERRUPT;
+            cycle_count += instr_clear_flag(instr, registers, FLAG_INTERRUPT);
             break;
         }
         case OPCODE::CLV:
         {
-            registers->reg_flags &= ~FLAG_OVERFLOW;
+            cycle_count += instr_clear_flag(instr, registers, FLAG_OVERFLOW);
             break;
         }
 
         //Increment
         case OPCODE::INC:
         {
-            instr_inc(registers, memory + decode_effective_adress(instr, memory, registers));
+            cycle_count += instr_inc(instr, registers, memory + decode_effective_adress(instr, memory, registers));
             break;
         }
         case OPCODE::INX:
         {
-            instr_inc(registers, &registers->reg_x);
+            cycle_count += instr_inc(instr, registers, &registers->reg_x);
             break;
         }
         case OPCODE::INY:
         {
-            instr_inc(registers, &registers->reg_y);
+            cycle_count += instr_inc(instr, registers, &registers->reg_y);
             break;
         }
 
         //Decrement
         case OPCODE::DEC:
         {
-            instr_dec(registers, memory + decode_effective_adress(instr, memory, registers));
+            cycle_count += instr_dec(instr, registers, memory + decode_effective_adress(instr, memory, registers));
             break;
         }
         case OPCODE::DEX:
         {
-            instr_dec(registers, &registers->reg_x);
+            cycle_count += instr_dec(instr, registers, &registers->reg_x);
             break;
         }
         case OPCODE::DEY:
         {
-            instr_dec(registers, &registers->reg_y);
+            cycle_count += instr_dec(instr, registers, &registers->reg_y);
             break;
         }
 
         //Logic operations
         case OPCODE::AND:
         {
-            instr_and(instr, memory, registers);
+            cycle_count += instr_and(instr, memory, registers);
             break;
         }
         case OPCODE::EOR:
         {
-            instr_eor(instr, memory, registers);
+            cycle_count += instr_eor(instr, memory, registers);
             break;
         }
         case OPCODE::ORA:
         {
-            instr_ora(instr, memory, registers);
+            cycle_count += instr_ora(instr, memory, registers);
             break;
         }
         //Shift operations
         case OPCODE::ASL:
         {
-            instr_asl(instr, memory, registers);
+            cycle_count += instr_asl(instr, memory, registers);
             break;
         }
         case OPCODE::LSR:
         {
-            instr_lsr(instr, memory, registers);
+            cycle_count += instr_lsr(instr, memory, registers);
             break;
         }
         case OPCODE::ROL:
         {
-            instr_rol(instr, memory, registers);
+            cycle_count += instr_rol(instr, memory, registers);
             break;
         }
         case OPCODE::ROR:
         {
-            instr_ror(instr, memory, registers);
+            cycle_count += instr_ror(instr, memory, registers);
             break;
         }
 
         //Arithmetic operations
         case OPCODE::ADC:
         {
-            instr_adc(instr, memory, registers);
+            cycle_count += instr_adc(instr, memory, registers);
             break;
         }
         case OPCODE::SBC:
         {
-            instr_sbb(instr, memory, registers);
+            cycle_count += instr_sbb(instr, memory, registers);
             break;
         }
 
         //Stack operations
         case OPCODE::PHA:
         {
-            instr_pha(memory, registers);
+            cycle_count += instr_pha(instr, memory, registers);
             break;
         }
         case OPCODE::PHP:
         {
-            instr_php(memory, registers);
+            cycle_count += instr_php(instr, memory, registers);
             break;
         }
         case OPCODE::PLA:
         {
-            instr_pla(memory, registers);
+            cycle_count += instr_pla(instr, memory, registers);
             break;
         }
         case OPCODE::PLP:
         {
-            instr_plp(memory, registers);
+            cycle_count += instr_plp(instr, memory, registers);
             break;
         }
 
         //Misc operations
         case OPCODE::BIT:
         {
-            instr_bit(instr, memory, registers);
+            cycle_count += instr_bit(instr, memory, registers);
+            break;
+        }
+        case OPCODE::NOP:
+        {
+            cycle_count += instr.instr_cycles;
             break;
         }
     }
