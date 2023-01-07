@@ -42,6 +42,11 @@ int main(int argc,char** argv)
                 }
                 break;
             }
+            case 'c':
+            {
+                printf("Cycles: %d", get_cycle_count());
+                break;
+            }
         }
         printf("\r\n");
     }while(input!='q');

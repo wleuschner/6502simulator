@@ -14,9 +14,11 @@ uint8_t* memory = nullptr;
 uint16_t memory_size = 0;
 register_file* registers = nullptr;
 uint16_t program_size = 0;
+uint32_t cycle_count = 0;
 
 void init(uint16_t mem_size)
 {
+    cycle_count = 0;
     memory_size = mem_size;
     memory = (uint8_t*)malloc(memory_size);
     memset(memory, 0, memory_size);
@@ -55,6 +57,11 @@ void deinit()
     memory = nullptr;
 }
 
+uint32_t get_cycle_count()
+{
+    return cycle_count;
+}
+
 register_file get_registers()
 {
     return *registers;
@@ -76,6 +83,7 @@ std::vector<instruction> disassemble_program()
 instruction step()
 {
     instruction instr = decode_instruction(memory, registers->reg_pc);
+    cycle_count += instr.instr_cycles;
     registers->reg_pc += instr.instr_length;
     switch(instr.opcode_name)
     {

@@ -104,12 +104,13 @@ enum OPCODE
 
 struct instruction
 {
-    instruction(OPCODE opcode, ADDRESS_MODE mode)
-        : opcode_name(opcode), opcode_mode(mode), instr_operand(0)
+    instruction(OPCODE opcode, ADDRESS_MODE mode, uint8_t cycles)
+        : opcode_name(opcode), opcode_mode(mode), instr_operand(0), instr_cycles(cycles)
     {};
 
     OPCODE opcode_name = OPCODE::JAM;
     ADDRESS_MODE opcode_mode = ADDRESS_MODE::IMPLICIT;
     uint16_t instr_length = 1;
     uint16_t instr_operand = 0;
+    uint8_t instr_cycles = 0;
 };

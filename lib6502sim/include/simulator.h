@@ -11,4 +11,5 @@ void register_to_string(char* buffer, size_t size, register_file* registers);
 void opcode_to_string(char* buffer, size_t size,instruction op);
 void deinit();
 instruction step();
+uint32_t get_cycle_count();
 register_file get_registers();
