@@ -66,7 +66,7 @@ uint32_t instr_load(instruction instr, uint8_t* memory, register_file* registers
     else
     {
         uint32_t address = decode_effective_adress(instr, memory, registers);
-        cycle_page_crossing_panalty(registers->reg_pc, address);
+        cycle_page_crossing_panalty(instr.instr_operand, address);
         *reg = memory[address];
     }
     alu_flags_update(reg, &registers->reg_flags);
@@ -83,7 +83,7 @@ uint32_t instr_store(instruction instr, uint8_t* memory, register_file* register
     else
     {
         uint32_t address = decode_effective_adress(instr, memory, registers);
-        cycle_page_crossing_panalty(registers->reg_pc, address);
+        cycle_page_crossing_panalty(instr.instr_operand, address);
         memory[decode_effective_adress(instr, memory, registers)] = *reg;
     }
     return instr.instr_cycles + extra_cycles;
@@ -132,7 +132,7 @@ uint32_t instr_and(instruction instr, uint8_t* memory, register_file* registers)
     else
     {
         uint32_t address = decode_effective_adress(instr, memory, registers);
-        cycle_page_crossing_panalty(registers->reg_pc, address);
+        cycle_page_crossing_panalty(instr.instr_operand, address);
         registers->reg_a &= memory[decode_effective_adress(instr, memory, registers)];
     }
     alu_flags_update(&registers->reg_a, &registers->reg_flags);
@@ -149,7 +149,7 @@ uint32_t instr_eor(instruction instr, uint8_t* memory, register_file* registers)
     else
     {
         uint32_t address = decode_effective_adress(instr, memory, registers);
-        cycle_page_crossing_panalty(registers->reg_pc, address);
+        cycle_page_crossing_panalty(instr.instr_operand, address);
         registers->reg_a ^= memory[decode_effective_adress(instr, memory, registers)];
     }
     alu_flags_update(&registers->reg_a, &registers->reg_flags);
@@ -166,7 +166,7 @@ uint32_t instr_ora(instruction instr, uint8_t* memory, register_file* registers)
     else
     {
         uint32_t address = decode_effective_adress(instr, memory, registers);
-        cycle_page_crossing_panalty(registers->reg_pc, address);
+        cycle_page_crossing_panalty(instr.instr_operand, address);
         registers->reg_a |= memory[decode_effective_adress(instr, memory, registers)];
     }
     alu_flags_update(&registers->reg_a, &registers->reg_flags);
@@ -224,7 +224,7 @@ uint32_t instr_branch(instruction instr, register_file* registers, bool take)
     if(take)
     {
         uint16_t branch_address = registers->reg_pc+(int8_t)instr.instr_operand;
-        extra_cycles = cycle_page_crossing_panalty(registers->reg_pc, branch_address) + 1;
+        extra_cycles = cycle_page_crossing_panalty(instr.instr_operand, branch_address) + 1;
         registers->reg_pc = branch_address;
     }
     return instr.instr_cycles + extra_cycles;
@@ -242,7 +242,7 @@ uint32_t instr_adc(instruction instr, uint8_t* memory, register_file* registers)
     else
     {
         uint32_t address = decode_effective_adress(instr, memory, registers);
-        cycle_page_crossing_panalty(registers->reg_pc, address);
+        cycle_page_crossing_panalty(instr.instr_operand, address);
         operand = ((uint16_t)memory[decode_effective_adress(instr, memory, registers)]);
     }
     temp_result = (uint16_t)(registers->reg_a) + operand + (registers->reg_flags & FLAG_CARRY);
@@ -284,7 +284,7 @@ uint32_t instr_sbb(instruction instr, uint8_t* memory, register_file* registers)
     else
     {
         uint32_t address = decode_effective_adress(instr, memory, registers);
-        cycle_page_crossing_panalty(registers->reg_pc, address);
+        cycle_page_crossing_panalty(instr.instr_operand, address);
         operand = ((uint16_t)memory[decode_effective_adress(instr, memory, registers)]);
     }
     temp_result = (uint16_t)(registers->reg_a) - ((uint16_t)instr.instr_operand) - (registers->reg_flags & FLAG_CARRY);
@@ -325,7 +325,7 @@ uint32_t instr_cmp(instruction instr, uint8_t* memory, register_file* registers,
     else
     {
         uint32_t address = decode_effective_adress(instr, memory, registers);
-        cycle_page_crossing_panalty(registers->reg_pc, address);
+        cycle_page_crossing_panalty(instr.instr_operand, address);
         result = (uint16_t)(registers->reg_a) - ((uint16_t)memory[decode_effective_adress(instr, memory, registers)]);
     }
 
