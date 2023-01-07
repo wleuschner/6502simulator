@@ -168,16 +168,29 @@ void instr_branch(instruction instr, register_file* registers, bool take)
 void instr_adc(instruction instr, uint8_t* memory, register_file* registers)
 {
     uint16_t temp_result;
+    uint16_t operand;
     if(instr.opcode_mode==ADDRESS_MODE::IMMIDIATE)
     {
-        temp_result = (uint16_t)(registers->reg_a) + ((uint16_t)instr.instr_operand) + (registers->reg_flags & FLAG_CARRY);
+        operand = ((uint16_t)instr.instr_operand);
     }
     else
     {
-        temp_result = (uint16_t)(registers->reg_a) + ((uint16_t)memory[decode_effective_adress(instr, memory, registers)]) + (registers->reg_flags & FLAG_CARRY);
+        operand = ((uint16_t)memory[decode_effective_adress(instr, memory, registers)]);
     }
-    registers->reg_a = temp_result&0xFF;
+    temp_result = (uint16_t)(registers->reg_a) + operand + (registers->reg_flags & FLAG_CARRY);
 
+
+    //Check Sign Overflow
+    if((registers->reg_a^temp_result)&(operand^temp_result)&0x80)
+    {
+        registers->reg_flags |= FLAG_OVERFLOW;
+    }
+    else
+    {
+        registers->reg_flags &= ~FLAG_OVERFLOW;
+    }
+
+    //Check Carry
     if(temp_result>0xFF)
     {
         registers->reg_flags |= FLAG_CARRY;
@@ -186,22 +199,36 @@ void instr_adc(instruction instr, uint8_t* memory, register_file* registers)
     {
         registers->reg_flags &= ~FLAG_CARRY;
     }
+    registers->reg_a = temp_result&0xFF;
     alu_flags_update(&registers->reg_a, &registers->reg_flags);
 }
 
 void instr_sbb(instruction instr, uint8_t* memory, register_file* registers)
 {
     uint16_t temp_result;
+    uint16_t operand;
     if(instr.opcode_mode==ADDRESS_MODE::IMMIDIATE)
     {
-        temp_result = (uint16_t)(registers->reg_a) - ((uint16_t)instr.instr_operand) - (registers->reg_flags & FLAG_CARRY);
+        operand = ((uint16_t)instr.instr_operand);
     }
     else
     {
-        temp_result = (uint16_t)(registers->reg_a) - ((uint16_t)memory[decode_effective_adress(instr, memory, registers)]) - (registers->reg_flags & FLAG_CARRY);
+        operand = ((uint16_t)memory[decode_effective_adress(instr, memory, registers)]);
     }
-    registers->reg_a = temp_result&0xFF;
+    temp_result = (uint16_t)(registers->reg_a) - ((uint16_t)instr.instr_operand) - (registers->reg_flags & FLAG_CARRY);
 
+
+    //Check Sign Overflow
+    if((registers->reg_a^temp_result)&(operand^temp_result)&0x80)
+    {
+        registers->reg_flags |= FLAG_OVERFLOW;
+    }
+    else
+    {
+        registers->reg_flags &= ~FLAG_OVERFLOW;
+    }
+
+    //Check Carry
     if(temp_result>0xFF)
     {
         registers->reg_flags &= ~FLAG_CARRY;
@@ -210,6 +237,7 @@ void instr_sbb(instruction instr, uint8_t* memory, register_file* registers)
     {
         registers->reg_flags |= FLAG_CARRY;
     }
+    registers->reg_a = temp_result&0xFF;
     alu_flags_update(&registers->reg_a, &registers->reg_flags);
 }
 
